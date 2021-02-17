@@ -54,7 +54,10 @@
                 },
             _coordsApplyError:
                 function (error) {
+                    /*
+                    console.log('Unable to retrieve your location');
                     console.log(error);
+                    */
                 },
             coordsApply:
                 function () {
@@ -163,12 +166,12 @@ jQuery(function ($) {
         plat = plat || lat;
         plng = plng || lng;
         $("#map").attr({
-            src: "https://www.google.com/maps/embed/v1/directions"
-                    + "?destination=" + plat + "," + plng
-                    + "&origin=" + lat + "," + lng
-                    + "&zoom=18"
-                    + "&mode=walking"
-                    + "&key=AIzaSyA-O4xMAeNhtEdtEBFyrlGxfb_xuCwxtcU"
+            src: "http://maps.google.co.jp/maps"
+                    + "?output=embed"
+                    + "&ll=" + plat + "," + plng
+                    + "&q=" + lat + "," + lng
+                    + "&z=18"
+                    + "&hl=ja"
         });
     }
     $('#radius').on('change', function (event) {
