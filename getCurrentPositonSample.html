@@ -1,0 +1,28 @@
+<html>
+<head>
+<title>Sample of getCurrentPosition</title>
+<script>
+let success = (position) => {
+    let coords = position.coords;
+    document.getElementById('lat').innerHTML = coords.latitude;
+    document.getElementById('lnd').innerHTML = coords.longitude;
+}
+let error = () => {
+    console.log('Unable to retrieve your location');
+}
+window.addEventListener('load', (event) => {
+    navigator.geolocation.getCurrentPosition(
+        success, error
+    );
+});
+</script>
+</head>
+<body>
+<div>
+  lat: <span id="lat"></span>
+</div>
+<div id="lng">
+  lnd: <span id="lnd"></span>
+</div>
+</body>
+</html>

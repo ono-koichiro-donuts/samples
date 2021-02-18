@@ -1,0 +1,49 @@
+<html>
+<head>
+<title>Sample of getDistance</title>
+<style>
+body{
+    padding:0;
+    margin:0;
+    width:100%;
+    height:100%;
+    background-color: #eeeeee;
+}
+</style>
+<script>
+const Rx = 6378137.000; // 長半径
+const Ry = 6356752.314140356; // 短半径
+const E2 = (Rx**2 - Ry**2) / Rx**2; // 離心率^2
+let hubeny = (coordinate1, coordinate2) => {
+    const r = (n) => n * Math.PI / 180;
+    let lat1, lat2;
+    let Dy = (lat1 = r(coordinate1[0])) - (lat2 = r(coordinate2[0])); // 緯度差
+    let Dx = r(coordinate1[1]) - r(coordinate2[1]); // 軽度差
+    let P = (lat1 + lat2) / 2; // 中点緯度
+    let W = Math.sqrt(1 - E2 * (Math.sin(P)**2));
+    let M = Rx * (1 - E2) / W**3; // 子午線曲率半径
+    let N = Rx / W; // 卯酉線曲率半径
+    return Math.sqrt((Dy * M) ** 2 + (Dx * N * Math.cos(P)) ** 2);
+}
+
+let write = (s) => {
+    let div = document.createElement('div');
+    div.innerText = s
+    document.body.appendChild(div);
+}
+
+window.addEventListener("load", (event) => {
+    const tokyo = [35.689487, 139.691706];
+    const kawasaki = [35.5562073, 139.5723855];
+    const tp1 = [-75.343, 39.984];
+    const tp2 = [-75.534, 39.123];
+
+    write(hubeny(tokyo, kawasaki));
+});
+</script>
+</head>
+<body>
+
+
+</body>
+</html>
