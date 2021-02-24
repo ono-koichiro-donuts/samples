@@ -34,6 +34,7 @@
 </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="./jQuery.geo.js?system=WGS8"></script>
+<script src="./APIKeys.js"></script>
 <script>
 jQuery(function ($) {
     if (!navigator.geolocation) {
@@ -147,7 +148,7 @@ jQuery(function ($) {
                     + "&origin=" + lat + "," + lng
                     + "&zoom=18"
                     + "&mode=walking"
-                    + "&key=AIzaSyA-O4xMAeNhtEdtEBFyrlGxfb_xuCwxtcU"
+                    + "&key=" + GoogleMapsEmbedAPI
         });
     }
     $('#radius').on('change', function (event) {
