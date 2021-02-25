@@ -114,7 +114,7 @@
                     navigator.geolocation.getCurrentPosition(
                         f.success.bind({funcs: arguments}),
                         error,
-                        $.extend({}, f.options)
+                        $.extend(options, f.options)
                     );
                 },
         },
