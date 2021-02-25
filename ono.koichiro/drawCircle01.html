@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Stati APIで円を描く</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="./jQuery.geo.js?system=WGS8"></script>
+<script src="./APIKeys.js"></script>
+<script>
+jQuery(function ($) {
+    $('#test').on('click', function (event) {
+        var points = [], coords;
+        for (var i=0; i <= 360; i++) {
+            coords = $.geo.vincenty([35.68640034539395, 139.70043140560665], i, 30)
+            points.push(coords.join(','));
+        }
+        var path = '&path='
+                    + 'color:0x00FF00FF|'
+                    + 'fillcolor:0x00FF0033|'
+                    + 'weight:1|'
+                    + points.join('|');
+        var url
+            = 'https://maps.googleapis.com/maps/api/staticmap'
+                + '?center=35.68640034539395,139.70043140560665'
+                + '&zoom=17'
+                + '&size=500x500'
+                + '&scale=2'
+                + '&language=jp'
+                + path
+                + '&key=' + GoogleMapsStaticAPI;
+        $('#map').html(
+            $('<img />')
+                .attr({src: url})
+                .css({width: '100%'})
+        );
+    });
+    /*
+path=color:0x0000ff|weight:5|40.737102,-73.990318|40.749825,-73.987963|40.752946,-73.987384|40.755823,-73.986397
+*/
+
+});
+</script>
+</head>
+<body>
+<div><button id="test">test</button></div>
+<div id="map"></div>
+</body>
+</html>
