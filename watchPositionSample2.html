@@ -4,6 +4,8 @@
 <script>
 
 let count = 0;
+let wwid = null;
+let wid = null;
 
 const success = (position) => {
     const coords = position.coords;
@@ -18,18 +20,54 @@ const error = () => {
     error.insertBefore(div, error.querySelector("div"));
 }
 
+function stopValidate()
+{
+    if (wwid) {
+        clearTimeout(wwid);
+        wwid = null;
+    }
+    if (wid) {
+        geolocation.clearWatch(wid);
+        wid = null;
+    }
+}
+
+function startValidate(timeout)
+{
+    stopValidate();
+    timeout = timeout || 5000;
+    //disableAditItem();
+    //areaInfo(Measuring, message_measuring);
+    wid = geolocation.watchPosition(
+        success,
+        error,
+        {
+            enableHighAccuracy: false,
+            timeout: timeout,
+            maximumAge: 0
+        }
+    );
+    wwid = setTimeout(startValidate, 25000);
+
+
+    /*
+    navigator.geolocation.watchPosition(
+        success,
+        error,
+        {
+            enableHighAccuracy: false,
+            timeout: 5000,
+            maximumAge: 0
+        }
+    );
+    */
+
+
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
-    //if (confirm("Geofencing打刻を開始します。")) {
-        navigator.geolocation.watchPosition(
-            success,
-            error,
-            {
-                enableHighAccuracy: false,
-                timeout: 5000,
-                maximumAge: 0
-            }
-        );
-    //}
+    startValidate();
 });
 </script>
 </head>
