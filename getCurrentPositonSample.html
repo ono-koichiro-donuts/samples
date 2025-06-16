@@ -10,10 +10,13 @@ let success = (position) => {
 let error = () => {
     console.log('Unable to retrieve your location');
 }
-window.addEventListener('load', (event) => {
-    navigator.geolocation.getCurrentPosition(
-        success, error
-    );
+
+document.addEventListener("DOMContentLoaded", () => {
+    if (confirm("Geofencing打刻を再開します。")) {
+        navigator.geolocation.getCurrentPosition(
+            success, error
+        );
+    }
 });
 </script>
 </head>
