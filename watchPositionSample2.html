@@ -38,6 +38,7 @@ function initGeolocationWatcher(userOptions = {}) {
     }
 
     console.info("[GeolocationWatcher] watchPosition started");
+    log("[GeolocationWatcher] watchPosition started");
   }
 
   function stop() {
@@ -52,17 +53,20 @@ function initGeolocationWatcher(userOptions = {}) {
     stop();
     start();
     console.info(`[GeolocationWatcher] ${reason}`);
+    log(`[GeolocationWatcher] ${reason}`);
   }
 
   function checkSilence() {
     if (Date.now() - lastUpdated > options.maxSilence) {
       needsRestart = true;
       console.info("[GeolocationWatcher] 沈黙検知: ユーザー操作による再起動を待機中");
+      log("[GeolocationWatcher] 沈黙検知: ユーザー操作による再起動を待機中");
     }
   }
 
   function handleError(err) {
     console.warn("[GeolocationWatcher] 位置情報エラー:", err);
+    log("[GeolocationWatcher] 位置情報エラー:", err);
 
     if (err.code === 1) {
       // PERMISSION_DENIED
@@ -70,6 +74,7 @@ function initGeolocationWatcher(userOptions = {}) {
     } else {
       // 一時的エラーの場合は復旧を期待して放置
       console.info("[GeolocationWatcher] 一時的エラー。watchは継続。");
+      log("[GeolocationWatcher] 一時的エラー。watchは継続。");
     }
   }
 
@@ -118,10 +123,10 @@ const success = (position) => {
     document.getElementById('lat').innerHTML = coords.latitude;
     document.getElementById('lnd').innerHTML = coords.longitude;
 }
-const error = () => {
+const log = (message = "") => {
     const error = document.getElementById("error");
     const div = document.createElement("div"); 
-    div.textContent = count;
+    div.textContent = `count=${count}: ${message}`;
     error.insertBefore(div, error.querySelector("div"));
 }
 
@@ -132,7 +137,7 @@ function startValidate(timeout)
     //areaInfo(Measuring, message_measuring);
     initGeolocationWatcher({
         onUpdate: success,
-        onError: error,
+        onError: log,
         geoOptions: {
             enableHighAccuracy: false,
             timeout,
