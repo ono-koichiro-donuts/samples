@@ -2,12 +2,11 @@
 <head>
 <title>Sample of watchPosition 2</title>
 <script>
-function initGeolocationWatcher(userOptions = {}) {
-  const sec = 1000;
+export function initGeolocationWatcher(userOptions = {}) {
   const options = {
-    geoOptions: { enableHighAccuracy: true, timeout: 10 * sec },
-    fallbackInterval: 30 * sec,
-    maxSilence: 60 * sec,
+    geoOptions: { enableHighAccuracy: true, timeout: 10000 },
+    fallbackInterval: 20000,  // デフォルト20秒
+    maxSilence: 60000,        // デフォルト1分
     onUpdate: () => {},
     onError: () => {},
     domContentFallback: true,
@@ -17,6 +16,7 @@ function initGeolocationWatcher(userOptions = {}) {
   let watchId = null;
   let timerId = null;
   let lastUpdated = 0;
+  let needsRestart = false;
 
   function start() {
     if (watchId !== null) navigator.geolocation.clearWatch(watchId);
@@ -28,7 +28,7 @@ function initGeolocationWatcher(userOptions = {}) {
       },
       err => {
         options.onError(err);
-        promptRecovery();
+        handleError(err);
       },
       options.geoOptions
     );
@@ -36,6 +36,8 @@ function initGeolocationWatcher(userOptions = {}) {
     if (!timerId) {
       timerId = setInterval(checkSilence, options.fallbackInterval);
     }
+
+    console.info("[GeolocationWatcher] watchPosition started");
   }
 
   function stop() {
@@ -54,28 +56,42 @@ function initGeolocationWatcher(userOptions = {}) {
 
   function checkSilence() {
     if (Date.now() - lastUpdated > options.maxSilence) {
-      restart("沈黙による再起動");
+      needsRestart = true;
+      console.info("[GeolocationWatcher] 沈黙検知: ユーザー操作による再起動を待機中");
     }
   }
 
-  function promptRecovery() {
-    const ok = window.confirm("位置情報の取得に失敗しました。再開しますか？");
+  function handleError(err) {
+    console.warn("[GeolocationWatcher] 位置情報エラー:", err);
+
+    if (err.code === 1) {
+      // PERMISSION_DENIED
+      promptRecovery("位置情報の利用が拒否されました。再開しますか？");
+    } else {
+      // 一時的エラーの場合は復旧を期待して放置
+      console.info("[GeolocationWatcher] 一時的エラー。watchは継続。");
+    }
+  }
+
+  function promptRecovery(message) {
+    const ok = window.confirm(message || "位置情報取得に失敗しました。再開しますか？");
     if (ok) restart("ユーザー同意による再起動");
   }
 
+  // pointerdown による再起動（沈黙検知後のみ）
   document.addEventListener("pointerdown", () => {
-    if (Date.now() - lastUpdated > options.maxSilence) {
-      restart("ユーザー操作による再起動");
+    if (needsRestart) {
+      restart("ユーザー操作による沈黙復旧");
+      needsRestart = false;
     }
   });
 
   if (options.domContentFallback) {
     document.addEventListener("DOMContentLoaded", () => {
       start();
+      // 5秒後も未更新なら UI fallback
       setTimeout(() => {
-        if (lastUpdated === 0) {
-          showStartButton();
-        }
+        if (lastUpdated === 0) showStartButton();
       }, 5000);
     });
   }
