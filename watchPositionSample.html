@@ -16,11 +16,11 @@ const error = () => {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    if (confirm("Geofencing打刻を開始します。")) {
+    //if (confirm("Geofencing打刻を開始します。")) {
         navigator.geolocation.watchPosition(
             success, error
         );
-    }
+    //}
 });
 </script>
 </head>
