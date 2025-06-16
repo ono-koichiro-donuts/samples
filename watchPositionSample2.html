@@ -85,6 +85,7 @@ function initGeolocationWatcher(userOptions = {}) {
 
   // pointerdown による再起動（沈黙検知後のみ）
   document.addEventListener("pointerdown", () => {
+    log("pointerdown");
     if (needsRestart) {
       restart("ユーザー操作による沈黙復旧");
       needsRestart = false;
