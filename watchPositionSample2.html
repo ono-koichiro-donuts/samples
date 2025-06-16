@@ -1,0 +1,50 @@
+<html>
+<head>
+<title>Sample of watchPosition 2</title>
+<script>
+
+let count = 0;
+
+const success = (position) => {
+    const coords = position.coords;
+    document.getElementById('count').innerHTML = count++;
+    document.getElementById('lat').innerHTML = coords.latitude;
+    document.getElementById('lnd').innerHTML = coords.longitude;
+}
+const error = () => {
+    const error = document.getElementById("error");
+    const div = document.createElement("div"); 
+    div.textContent = count;
+    error.insertBefore(div, error.querySelector("div"));
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    //if (confirm("Geofencing打刻を開始します。")) {
+        navigator.geolocation.watchPosition(
+            success,
+            error,
+            {
+                enableHighAccuracy: false,
+                timeout: 5000,
+                maximumAge: 0
+            }
+        );
+    //}
+});
+</script>
+</head>
+<body>
+<div>
+  count: <span id="count"></span>
+</div>
+<div>
+  lat: <span id="lat"></span>
+</div>
+<div id="lng">
+  lnd: <span id="lnd"></span>
+</div>
+<hr>
+<div id="error">
+</div>
+</body>
+</html>
