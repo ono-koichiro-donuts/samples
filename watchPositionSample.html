@@ -1,0 +1,32 @@
+<html>
+<head>
+<title>Sample of watchPosition</title>
+<script>
+
+const success = (position) => {
+    let coords = position.coords;
+    document.getElementById('lat').innerHTML = coords.latitude;
+    document.getElementById('lnd').innerHTML = coords.longitude;
+}
+const error = () => {
+    console.log('Unable to retrieve your location');
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    if (confirm("Geofencing打刻を開始します。")) {
+        navigator.geolocation.watchPosition(
+            success, error
+        );
+    }
+});
+</script>
+</head>
+<body>
+<div>
+  lat: <span id="lat"></span>
+</div>
+<div id="lng">
+  lnd: <span id="lnd"></span>
+</div>
+</body>
+</html>
