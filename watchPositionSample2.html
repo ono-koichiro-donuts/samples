@@ -143,7 +143,9 @@ function startValidate(timeout)
             enableHighAccuracy: false,
             timeout,
             maximumAge: 0
-        }
+        },
+        fallbackInterval: 10000,
+        maxSilence: 10000,
     });
 }
 
