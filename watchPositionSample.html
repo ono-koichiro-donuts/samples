@@ -3,8 +3,11 @@
 <title>Sample of watchPosition</title>
 <script>
 
+let count = 0;
+
 const success = (position) => {
     let coords = position.coords;
+    document.getElementById('count').innerHTML = count++;
     document.getElementById('lat').innerHTML = coords.latitude;
     document.getElementById('lnd').innerHTML = coords.longitude;
 }
@@ -22,6 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </head>
 <body>
+<div>
+  count: <span id="count"></span>
+</div>
 <div>
   lat: <span id="lat"></span>
 </div>
