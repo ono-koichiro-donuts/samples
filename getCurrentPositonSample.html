@@ -2,12 +2,12 @@
 <head>
 <title>Sample of getCurrentPosition</title>
 <script>
-let success = (position) => {
+const success = (position) => {
     let coords = position.coords;
     document.getElementById('lat').innerHTML = coords.latitude;
     document.getElementById('lnd').innerHTML = coords.longitude;
 }
-let error = () => {
+const error = () => {
     console.log('Unable to retrieve your location');
 }
 
