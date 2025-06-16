@@ -2,11 +2,98 @@
 <head>
 <title>Sample of watchPosition 2</title>
 <script>
+function initGeolocationWatcher(userOptions = {}) {
+  const options = {
+    geoOptions: { enableHighAccuracy: true, timeout: 10000 },
+    fallbackInterval: 10000,
+    maxSilence: 20000,
+    onUpdate: () => {},
+    onError: () => {},
+    domContentFallback: true,
+    ...userOptions,
+  };
+
+  let watchId = null;
+  let timerId = null;
+  let lastUpdated = 0;
+
+  function start() {
+    if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+
+    watchId = navigator.geolocation.watchPosition(
+      pos => {
+        lastUpdated = Date.now();
+        options.onUpdate(pos);
+      },
+      err => {
+        options.onError(err);
+        promptRecovery();
+      },
+      options.geoOptions
+    );
+
+    if (!timerId) {
+      timerId = setInterval(checkSilence, options.fallbackInterval);
+    }
+  }
+
+  function stop() {
+    if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+
+    if (timerId !== null) clearInterval(timerId);
+    timerId = null;
+  }
+
+  function restart(reason = "再起動") {
+    stop();
+    start();
+    console.info(`[GeolocationWatcher] ${reason}`);
+  }
+
+  function checkSilence() {
+    if (Date.now() - lastUpdated > options.maxSilence) {
+      restart("沈黙による再起動");
+    }
+  }
+
+  function promptRecovery() {
+    const ok = window.confirm("位置情報の取得に失敗しました。再開しますか？");
+    if (ok) restart("ユーザー同意による再起動");
+  }
+
+  document.addEventListener("pointerdown", () => {
+    if (Date.now() - lastUpdated > options.maxSilence) {
+      restart("ユーザー操作による再起動");
+    }
+  });
+
+  if (options.domContentFallback) {
+    document.addEventListener("DOMContentLoaded", () => {
+      start();
+      setTimeout(() => {
+        if (lastUpdated === 0) {
+          showStartButton();
+        }
+      }, 5000);
+    });
+  }
+
+  function showStartButton() {
+    const btn = document.createElement("button");
+    btn.textContent = "位置情報取得を開始";
+    btn.onclick = () => {
+      start();
+      btn.remove();
+    };
+    document.body.appendChild(btn);
+  }
+
+  return { start, stop };
+}
 
 const geolocation = navigator.geolocation;
 let count = 0;
-let wwid = null;
-let wid = null;
 
 const success = (position) => {
     const coords = position.coords;
@@ -21,49 +108,20 @@ const error = () => {
     error.insertBefore(div, error.querySelector("div"));
 }
 
-function stopValidate()
-{
-    if (wwid) {
-        clearTimeout(wwid);
-        wwid = null;
-    }
-    if (wid) {
-        geolocation.clearWatch(wid);
-        wid = null;
-    }
-}
-
 function startValidate(timeout)
 {
-    stopValidate();
     timeout = timeout || 5000;
     //disableAditItem();
     //areaInfo(Measuring, message_measuring);
-    wid = geolocation.watchPosition(
-        success,
-        error,
-        {
+    initGeolocationWatcher({
+        onUpdate: success,
+        onError: error,
+        geoOptions: {
             enableHighAccuracy: false,
             timeout: timeout,
             maximumAge: 0
         }
-    );
-    wwid = setTimeout(startValidate, 25000);
-
-
-    /*
-    navigator.geolocation.watchPosition(
-        success,
-        error,
-        {
-            enableHighAccuracy: false,
-            timeout: 5000,
-            maximumAge: 0
-        }
-    );
-    */
-
-
+    });
 }
 
 
