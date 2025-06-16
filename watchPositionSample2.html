@@ -3,10 +3,11 @@
 <title>Sample of watchPosition 2</title>
 <script>
 function initGeolocationWatcher(userOptions = {}) {
+  const sec = 1000;
   const options = {
-    geoOptions: { enableHighAccuracy: true, timeout: 10000 },
-    fallbackInterval: 10000,
-    maxSilence: 20000,
+    geoOptions: { enableHighAccuracy: true, timeout: 10 * sec },
+    fallbackInterval: 30 * sec,
+    maxSilence: 60 * sec,
     onUpdate: () => {},
     onError: () => {},
     domContentFallback: true,
