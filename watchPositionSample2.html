@@ -2,128 +2,80 @@
 <head>
 <title>Sample of watchPosition 2</title>
 <script>
-const initGeolocationWatcher = (userOptions = {}) => {
-  const options = {
-    geoOptions: { enableHighAccuracy: true, timeout: 10000 },
-    fallbackInterval: 20000,
-    maxSilence: 60000,
-    onUpdate: () => {},
-    onError: () => {},
-    domContentFallback: true,
-    ...userOptions,
+// code2: geoOptions対応 geolocationWatcher（JS版）
+const createGeolocationWatcher = ({
+  onFix,
+  onError,
+  geoOptions = {
+    enableHighAccuracy: true,
+    maximumAge: 0,
+    timeout: Infinity,
+  },
+  silenceTimeout = 60000, // ms: watch位置更新が止まったと見なす閾値
+  pointerCooldown = 5000, // ms: pointerdownの連打を抑制
+}) => {
+  let watchId = null;
+  let lastFix = 0;
+  let lastPointerTime = 0;
+
+  const restartWatch = () => {
+    if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+    watchId = navigator.geolocation.watchPosition(handleFix, handleError, geoOptions);
   };
 
-  let watchId = null;
-  let timerId = null;
-  let lastUpdated = 0;
-  let lastPointerdown = 0;
-  let needsRestart = false;
+  const handleFix = (pos) => {
+    lastFix = Date.now();
+    onFix(pos);
+  };
+
+  const handleError = (err) => {
+    if (err.code === 1 && lastFix === 0) {
+      if (confirm("位置情報の取得がブロックされています。再試行しますか？")) {
+        restartWatch();
+      }
+    } else {
+      console.warn("geolocation error", err);
+    }
+    onError?.(err);
+  };
+
+  const handlePointer = () => {
+    const now = Date.now();
+    if (now - lastPointerTime < pointerCooldown) return;
+    lastPointerTime = now;
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        onFix(pos);
+        if (now - lastFix > silenceTimeout) {
+          restartWatch();
+        }
+      },
+      (err) => {
+        console.warn("getCurrentPosition error", err);
+        onError?.(err);
+      },
+      geoOptions
+    );
+  };
 
   const start = () => {
-    if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-
-    watchId = navigator.geolocation.watchPosition(
-      pos => {
-        lastUpdated = Date.now();
-        options.onUpdate(pos);
-      },
-      err => {
-        options.onError(err);
-        handleError(err);
-      },
-      options.geoOptions
-    );
-
-    if (!timerId) {
-      timerId = setInterval(checkSilence, options.fallbackInterval);
-    }
-
-    console.info("[GeolocationWatcher] watchPosition started");
+    lastFix = 0;
+    restartWatch();
+    window.addEventListener("pointerdown", handlePointer);
   };
 
   const stop = () => {
-    if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-    watchId = null;
-
-    if (timerId !== null) clearInterval(timerId);
-    timerId = null;
-  };
-
-  const restart = (reason = "再起動") => {
-    stop();
-    start();
-    console.info(`[GeolocationWatcher] ${reason}`);
-  };
-
-  const checkSilence = () => {
-    if (Date.now() - lastUpdated > options.maxSilence) {
-      needsRestart = true;
-      console.info("[GeolocationWatcher] 沈黙検知: 再起動を pointerdown に defer");
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
     }
-  };
-
-  const handleError = err => {
-    console.warn("[GeolocationWatcher] 位置情報エラー:", err);
-
-    if (err.code === 1) {
-      promptRecovery("位置情報の利用が拒否されました。再開しますか？");
-    } else {
-      console.info("[GeolocationWatcher] 一時的エラー。watch は継続");
-    }
-  };
-
-  const promptRecovery = (message = "位置情報の取得に失敗しました。再開しますか？") => {
-    if (window.confirm(message)) restart("ユーザー同意による再起動");
-  };
-
-  // pointerdown: getCurrentPosition + 状態次第で restart（スロットル付き）
-  document.addEventListener("pointerdown", () => {
-    const now = Date.now();
-    const deltaTap = now - lastPointerdown;
-    const deltaSilence = now - lastUpdated;
-
-    if (deltaTap < 5000) return; // スロットル: 5秒
-    lastPointerdown = now;
-
-    // 即時現在地取得（打刻用）
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        console.info("[GeolocationWatcher] pointerdown により getCurrentPosition 成功");
-        options.onUpdate(pos);
-      },
-      err => {
-        console.warn("[GeolocationWatcher] pointerdown の getCurrentPosition 失敗:", err);
-      },
-      options.geoOptions
-    );
-
-    if (needsRestart || deltaSilence > options.maxSilence) {
-      restart("pointerdown による沈黙復旧");
-      needsRestart = false;
-    }
-  });
-
-  if (options.domContentFallback) {
-    document.addEventListener("DOMContentLoaded", () => {
-      start();
-      setTimeout(() => {
-        if (lastUpdated === 0) showStartButton();
-      }, 5000);
-    });
-  }
-
-  const showStartButton = () => {
-    const btn = document.createElement("button");
-    btn.textContent = "位置情報取得を開始";
-    btn.onclick = () => {
-      start();
-      btn.remove();
-    };
-    document.body.appendChild(btn);
+    window.removeEventListener("pointerdown", handlePointer);
   };
 
   return { start, stop };
 };
+
 
 const geolocation = navigator.geolocation;
 let count = 0;
@@ -147,16 +99,14 @@ function startValidate(timeout)
     timeout = timeout || 5000;
     //disableAditItem();
     //areaInfo(Measuring, message_measuring);
-    initGeolocationWatcher({
-        onUpdate: success,
+    createGeolocationWatcher({
+        onFix: success,
         onError: log,
         geoOptions: {
             enableHighAccuracy: false,
             timeout,
             maximumAge: 0
-        },
-        fallbackInterval: 25000,
-        maxSilence: 30000,
+        }
     });
 }
 
