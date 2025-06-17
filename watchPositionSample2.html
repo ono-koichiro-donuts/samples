@@ -107,12 +107,12 @@ function startValidate(timeout)
             timeout,
             maximumAge: 0
         }
-    });
+    }).start();
 }
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    startValidate().start();
+    startValidate();
 });
 </script>
 </head>
