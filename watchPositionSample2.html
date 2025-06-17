@@ -2,7 +2,7 @@
 <head>
 <title>Sample of watchPosition 2</title>
 <script>
-export const initGeolocationWatcher = (userOptions = {}) => {
+const initGeolocationWatcher = (userOptions = {}) => {
   const options = {
     geoOptions: { enableHighAccuracy: true, timeout: 10000 },
     fallbackInterval: 20000,
