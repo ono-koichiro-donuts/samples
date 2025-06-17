@@ -130,6 +130,7 @@ let count = 0;
 
 const success = (position) => {
     const coords = position.coords;
+    console.log({coords});
     document.getElementById('count').innerHTML = count++;
     document.getElementById('lat').innerHTML = coords.latitude;
     document.getElementById('lnd').innerHTML = coords.longitude;
