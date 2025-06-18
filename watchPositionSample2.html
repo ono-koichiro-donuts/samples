@@ -24,6 +24,7 @@ const createGeolocationWatcher = ({
   };
 
   const handleFix = (pos) => {
+    console.log("watchPosition");
     lastFix = Date.now();
     onFix(pos);
   };
@@ -41,11 +42,15 @@ const createGeolocationWatcher = ({
 
   const handlePointer = () => {
     const now = Date.now();
-    if (now - lastPointerTime < pointerCooldown) return;
+    if (now - lastPointerTime < pointerCooldown) {
+        console.log({now, lastPointerTime, pointerCooldown});
+        return;
+    }
     lastPointerTime = now;
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        console.log("getCurrentPosition");
         onFix(pos);
         if (now - lastFix > silenceTimeout) {
           restartWatch();
